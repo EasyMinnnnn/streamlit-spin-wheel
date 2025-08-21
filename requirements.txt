@@ -1,0 +1,2 @@
+streamlit
+plotly    # nếu bạn dùng biểu đồ pie của Plotly
