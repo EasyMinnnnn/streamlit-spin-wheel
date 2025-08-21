@@ -1,0 +1,57 @@
+import streamlit as st
+import streamlit.components.v1 as components
+import json
+import random
+
+st.title("Vòng quay Chart.js")
+
+# nhập dữ liệu
+names = st.text_area("Nhập tên:", value="A\nB\nC\nD").strip().splitlines()
+
+if st.button("Quay"):
+    # tạo dữ liệu JavaScript
+    labels = json.dumps(names)
+    data_values = json.dumps([1]*len(names))
+    random_rotation = random.uniform(0, 360)
+    
+    html_code = f"""
+    <canvas id="wheel"></canvas>
+    <button id="spin">Spin</button>
+    <p id="result"></p>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    const labels = {labels};
+    const data = {{
+      labels: labels,
+      datasets: [{{
+        data: {data_values},
+        backgroundColor: labels.map((_, i) => 
+          `hsl(${{(i/labels.length)*360}}, 80%, 60%)`)
+      }}]
+    }};
+    const ctx = document.getElementById('wheel').getContext('2d');
+    const myChart = new Chart(ctx, {{
+      type: 'pie',
+      data: data,
+      options: {{
+        rotation: {random_rotation},
+        animation: {{
+          duration: 5000,
+          easing: 'easeOutCubic'
+        }},
+        plugins: {{
+          legend: {{ display: false }}
+        }}
+      }}
+    }});
+    document.getElementById('spin').onclick = function() {{
+      const randomAngle = Math.random() * 360;
+      myChart.options.rotation = randomAngle;
+      myChart.update();
+      const segmentSize = 360 / labels.length;
+      const idx = Math.floor(((360 - randomAngle) % 360) / segmentSize);
+      document.getElementById('result').innerHTML = 'Kết quả: ' + labels[idx];
+    }};
+    </script>
+    """
+    components.html(html_code, height=500)
